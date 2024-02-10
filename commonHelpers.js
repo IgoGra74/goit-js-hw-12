@@ -25,12 +25,12 @@ import{S as h,i as l,a as y}from"./assets/vendor-527658dd.js";(function(){const 
                 <span>${r}</span>
               </div>
             </li>
-            <li">
+            <li>
               <div class="data-item">
                 <span class="image-property">Downloads</span>
                 <span>${i}</span>
-              </div>
-            </li>
+             </div>
+</li>
           </ul>
         </li>`}function S(t){return t.map(P).join("")}function p(t){const a=S(t);s.galleryContainer.insertAdjacentHTML("beforeend",a)}function m(){Math.ceil(u/d)<=c?s.btnLoadMore.classList.add("hidden"):s.btnLoadMore.classList.remove("hidden")}function F(){s.loader.classList.remove("hidden"),s.btnLoadMore.classList.add("hidden")}function f(){s.loader.classList.add("hidden"),s.btnLoadMore.classList.remove("hidden")}
 //# sourceMappingURL=commonHelpers.js.map
