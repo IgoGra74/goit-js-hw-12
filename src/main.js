@@ -4,11 +4,18 @@ import 'izitoast/dist/css/iziToast.min.css';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const formSearch = document.querySelector('.form-inline');
-const galleryContainer = document.querySelector('.gallery');
-const loader = document.querySelector('.loader');
+const refs = {
+  formSearch: document.querySelector('.form-inline'),
+  galleryContainer: document.querySelector('.gallery'),
+  loader: document.querySelector('.loader'),
+  btnLoadMore: document.querySelector('.button'),
+};
 
-formSearch.addEventListener('submit', onFormSubmit);
+let page = 1;
+let perPage = 15;
+let totalPages = 0;
+
+refs.formSearch.addEventListener('submit', onFormSubmit);
 
 const lightbox = new SimpleLightbox('.gallery a', {});
 
@@ -29,11 +36,12 @@ async function onFormSubmit(event) {
     });
     return;
   }
-  galleryContainer.innerHTML = '';
-  loader.style.display = 'block';
+  refs.galleryContainer.innerHTML = '';
+  showSpinner();
 
   try {
     const data = await getImage(query);
+    totalPages = data.totalHits;
 
     if (Array.isArray(data.hits) && data.hits.length > 0 && data.total > 0) {
       renderImage(data.hits);
@@ -64,19 +72,30 @@ async function onFormSubmit(event) {
     });
   } finally {
     event.target.reset();
-    loader.style.display = 'none';
+    checkBtnStatus();
+    hideSpinner();
   }
 }
 
 async function getImage(hit) {
   const BASE_URL = 'https://pixabay.com';
-  const END_POINT = '/api/';
-  const PARAMS = `?key=42099926-52a1046a87902a6e56a7e135a&q=${hit}&image_type=photo&orientation=horizontal&safesearch=true `;
+  const END_POINT = '/api';
+  const API_KEY = '42099926-52a1046a87902a6e56a7e135a';
+  const url = `${BASE_URL}${END_POINT}`;
 
-  const url = BASE_URL + END_POINT + PARAMS;
-
+  const option = {
+    params: {
+      key: API_KEY,
+      q: hit,
+      image_type: 'photo',
+      orientation: 'horizontal',
+      safesearch: 'true',
+      page: page,
+      per_page: perPage,
+    },
+  };
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, option);
     return response.data;
   } catch (error) {
     iziToast.error({
@@ -91,6 +110,17 @@ async function getImage(hit) {
     console.error('Error fetching data:', error);
     throw error;
   }
+}
+
+refs.btnLoadMore.addEventListener('click', onLoadMoreClick);
+
+async function onLoadMoreClick() {
+  page += 1;
+  showSpinner();
+  const data = await getImage(query);
+  renderImage(data.hits);
+  checkBtnStatus();
+  hideSpinner();
 }
 
 function imageTemplate({
@@ -145,5 +175,25 @@ function imagesTemplate(hits) {
 
 function renderImage(hits) {
   const markup = imagesTemplate(hits);
-  galleryContainer.innerHTML = markup;
+  refs.galleryContainer.insertAdjacentHTML('beforeend', markup);
+}
+
+function checkBtnStatus() {
+  const maxPage = Math.ceil(totalPages / perPage);
+  const isLastPage = maxPage <= page;
+  if (isLastPage) {
+    refs.btnLoadMore.classList.add('hidden');
+  } else {
+    refs.btnLoadMore.classList.remove('hidden');
+  }
+}
+
+function showSpinner() {
+  refs.loader.classList.remove('hidden');
+  refs.btnLoadMore.classList.add('hidden');
+}
+
+function hideSpinner() {
+  refs.loader.classList.add('hidden');
+  refs.btnLoadMore.classList.remove('hidden');
 }
