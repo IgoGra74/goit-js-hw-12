@@ -159,12 +159,12 @@ function imageTemplate({
                 <span>${comments}</span>
               </div>
             </li>
-            <li">
+            <li>
               <div class="data-item">
                 <span class="image-property">Downloads</span>
                 <span>${downloads}</span>
-              </div>
-            </li>
+             </div>
+</li>
           </ul>
         </li>`;
 }
