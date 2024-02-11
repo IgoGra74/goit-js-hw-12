@@ -83,7 +83,7 @@ async function onFormSubmit(event) {
 
 async function getImage(query) {
   const BASE_URL = 'https://pixabay.com';
-  const END_POINT = '/api';
+  const END_POINT = '/api/';
   const API_KEY = '42099926-52a1046a87902a6e56a7e135a';
   const url = `${BASE_URL}${END_POINT}`;
 
