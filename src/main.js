@@ -205,6 +205,15 @@ function checkBtnStatus() {
   const isLastPage = maxPage <= currentPage;
   if (isLastPage) {
     hideBtnLodMore();
+    iziToast.warning({
+      titleColor: '#FFFFFF',
+      message: "We're sorry, but you've reached the end of search results.",
+      messageSize: '16px',
+      position: 'topRight',
+      messageColor: '#FFFFFF',
+      backgroundColor: '#EF4040',
+      iconUrl: null,
+    });
   } else {
     showBtnLodMore();
   }
