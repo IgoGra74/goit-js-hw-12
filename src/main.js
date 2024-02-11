@@ -39,12 +39,14 @@ async function onFormSubmit(event) {
     return;
   }
   refs.galleryContainer.innerHTML = '';
+
   showSpinner();
 
   currentPage = 1;
 
   try {
     const data = await getImage(query);
+
     totalPages = data.totalHits;
 
     if (Array.isArray(data.hits) && data.hits.length > 0) {
@@ -76,7 +78,9 @@ async function onFormSubmit(event) {
     });
   } finally {
     event.target.reset();
+
     hideSpinner();
+
     checkBtnStatus();
   }
 }
@@ -100,6 +104,7 @@ async function getImage(query) {
   };
   try {
     const response = await axios.get(url, option);
+
     return response.data;
   } catch (error) {
     iziToast.error({
@@ -129,11 +134,11 @@ async function onLoadMoreClick() {
 
   renderImage(data.hits);
 
-  lightbox.refresh();
-
   checkBtnStatus();
 
   hideSpinner();
+
+  lightbox.refresh();
 
   const galleryItemHeight = getGalleryItemHeight();
 
