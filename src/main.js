@@ -129,6 +129,8 @@ async function onLoadMoreClick() {
 
   renderImage(data.hits);
 
+  lightbox.refresh();
+
   checkBtnStatus();
 
   hideSpinner();
