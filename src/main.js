@@ -123,8 +123,6 @@ async function getImage(query) {
 
 refs.btnLoadMore.addEventListener('click', onLoadMoreClick);
 
-refs.btnLoadMore.addEventListener('click', onLoadMoreClick);
-
 async function onLoadMoreClick() {
   showSpinner();
 
