@@ -9,9 +9,10 @@ const refs = {
   galleryContainer: document.querySelector('.gallery'),
   loader: document.querySelector('.loader'),
   btnLoadMore: document.querySelector('.button'),
+  firstGalleryItem: document.querySelector('.gallery-item'),
 };
-
-let page = 1;
+let query = 'igor';
+let currentPage = 1;
 let perPage = 15;
 let totalPages = 0;
 
@@ -22,7 +23,7 @@ const lightbox = new SimpleLightbox('.gallery a', {});
 async function onFormSubmit(event) {
   event.preventDefault();
 
-  const query = event.target.elements.query.value.trim();
+  query = event.target.elements.query.value.trim();
 
   if (!query) {
     iziToast.warning({
@@ -39,11 +40,13 @@ async function onFormSubmit(event) {
   refs.galleryContainer.innerHTML = '';
   showSpinner();
 
+  currentPage = 1;
+
   try {
     const data = await getImage(query);
     totalPages = data.totalHits;
 
-    if (Array.isArray(data.hits) && data.hits.length > 0 && data.total > 0) {
+    if (Array.isArray(data.hits) && data.hits.length > 0) {
       renderImage(data.hits);
 
       lightbox.refresh();
@@ -72,12 +75,12 @@ async function onFormSubmit(event) {
     });
   } finally {
     event.target.reset();
-    checkBtnStatus();
     hideSpinner();
+    checkBtnStatus();
   }
 }
 
-async function getImage(hit) {
+async function getImage(query) {
   const BASE_URL = 'https://pixabay.com';
   const END_POINT = '/api';
   const API_KEY = '42099926-52a1046a87902a6e56a7e135a';
@@ -86,11 +89,11 @@ async function getImage(hit) {
   const option = {
     params: {
       key: API_KEY,
-      q: hit,
+      q: query,
       image_type: 'photo',
       orientation: 'horizontal',
       safesearch: 'true',
-      page: page,
+      page: currentPage,
       per_page: perPage,
     },
   };
@@ -115,12 +118,25 @@ async function getImage(hit) {
 refs.btnLoadMore.addEventListener('click', onLoadMoreClick);
 
 async function onLoadMoreClick() {
-  page += 1;
   showSpinner();
+
+  currentPage += 1;
+
   const data = await getImage(query);
+
+  const galleryItemHeight = getGalleryItemHeight();
+
+  window.scrollBy({
+    top: galleryItemHeight * 2,
+    behavior: 'smooth',
+  });
   renderImage(data.hits);
+
   checkBtnStatus();
+
   hideSpinner();
+
+  getGalleryItemHeight();
 }
 
 function imageTemplate({
@@ -132,41 +148,41 @@ function imageTemplate({
   comments,
   downloads,
 }) {
-  return ` <li class="gallery-item">
-          <a class="gallery-link" href="${largeImageURL}">
-            <img
-              class="gallery-image"
-              src="${webformatURL}"
-              alt="${tags}"
-            />
-          </a>
-          <ul class="data-image">
-            <li>
-              <div class="data-item">
-                <span class="image-property">Likes</span>
-                <span>${likes}</span>
+  return `<li class="gallery-item">
+            <a class="gallery-link" href="${largeImageURL}">
+              <img
+                class="gallery-image"
+                src="${webformatURL}"
+                alt="${tags}"
+              />
+            </a>
+            <ul class="data-image">
+              <li>
+                <div class="data-item">
+                  <span class="image-property">Likes</span>
+                  <span>${likes}</span>
+                </div>
+              </li>
+              <li>
+                <div class="data-item">
+                  <span class="image-property">Views</span>
+                  <span>${views}</span>
+                </div>
+              </li>
+              <li>
+                <div class="data-item">
+                  <span class="image-property">Comments</span>
+                  <span>${comments}</span>
+                </div>
+              </li>
+              <li>
+                <div class="data-item">
+                  <span class="image-property">Downloads</span>
+                  <span>${downloads}</span>
               </div>
-            </li>
-            <li>
-              <div class="data-item">
-                <span class="image-property">Views</span>
-                <span>${views}</span>
-              </div>
-            </li>
-            <li>
-              <div class="data-item">
-                <span class="image-property">Comments</span>
-                <span>${comments}</span>
-              </div>
-            </li>
-            <li>
-              <div class="data-item">
-                <span class="image-property">Downloads</span>
-                <span>${downloads}</span>
-             </div>
-</li>
-          </ul>
-        </li>`;
+              </li>
+            </ul>
+          </li>`;
 }
 
 function imagesTemplate(hits) {
@@ -180,20 +196,33 @@ function renderImage(hits) {
 
 function checkBtnStatus() {
   const maxPage = Math.ceil(totalPages / perPage);
-  const isLastPage = maxPage <= page;
+  const isLastPage = maxPage <= currentPage;
   if (isLastPage) {
-    refs.btnLoadMore.classList.add('hidden');
+    hideBtnLodMore();
   } else {
-    refs.btnLoadMore.classList.remove('hidden');
+    showBtnLodMore();
   }
 }
 
 function showSpinner() {
   refs.loader.classList.remove('hidden');
+}
+
+function showBtnLodMore() {
+  refs.btnLoadMore.classList.remove('hidden');
+}
+
+function hideBtnLodMore() {
   refs.btnLoadMore.classList.add('hidden');
 }
 
 function hideSpinner() {
   refs.loader.classList.add('hidden');
-  refs.btnLoadMore.classList.remove('hidden');
+}
+function getGalleryItemHeight() {
+  if (refs.firstGalleryItem) {
+    const { height } = refs.firstGalleryItem.getBoundingClientRect();
+    return height;
+  }
+  return 0;
 }
