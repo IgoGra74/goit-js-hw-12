@@ -11,6 +11,7 @@ const refs = {
   btnLoadMore: document.querySelector('.button'),
   firstGalleryItem: document.querySelector('.gallery-item'),
 };
+
 let query = 'igor';
 let currentPage = 1;
 let perPage = 15;
