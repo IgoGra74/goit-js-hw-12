@@ -117,6 +117,8 @@ async function getImage(query) {
 
 refs.btnLoadMore.addEventListener('click', onLoadMoreClick);
 
+refs.btnLoadMore.addEventListener('click', onLoadMoreClick);
+
 async function onLoadMoreClick() {
   showSpinner();
 
@@ -124,21 +126,19 @@ async function onLoadMoreClick() {
 
   const data = await getImage(query);
 
-  const galleryItemHeight = getGalleryItemHeight();
-
-  window.scrollBy({
-    top: galleryItemHeight * 2,
-    behavior: 'smooth',
-  });
   renderImage(data.hits);
 
   checkBtnStatus();
 
   hideSpinner();
 
-  getGalleryItemHeight();
-}
+  const galleryItemHeight = getGalleryItemHeight();
 
+  window.scrollBy({
+    top: galleryItemHeight * 2,
+    behavior: 'smooth',
+  });
+}
 function imageTemplate({
   webformatURL,
   largeImageURL,
@@ -224,5 +224,6 @@ function getGalleryItemHeight() {
     const { height } = refs.firstGalleryItem.getBoundingClientRect();
     return height;
   }
+
   return 0;
 }
