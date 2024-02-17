@@ -1,10 +1,11 @@
-import axios from 'axios';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import renderImage from './js/render-functions';
+import getImage from './js/pixabay-api';
 
-const refs = {
+export const refs = {
   formSearch: document.querySelector('.form-inline'),
   galleryContainer: document.querySelector('.gallery'),
   loader: document.querySelector('.loader'),
@@ -13,9 +14,9 @@ const refs = {
 };
 
 let query = 'igor';
-let currentPage = 1;
-let perPage = 15;
 let totalPages = 0;
+export let perPage = 15;
+export let currentPage = 1;
 
 refs.formSearch.addEventListener('submit', onFormSubmit);
 
@@ -85,119 +86,34 @@ async function onFormSubmit(event) {
   }
 }
 
-async function getImage(query) {
-  const BASE_URL = 'https://pixabay.com';
-  const END_POINT = '/api/';
-  const API_KEY = '42099926-52a1046a87902a6e56a7e135a';
-  const url = `${BASE_URL}${END_POINT}`;
-
-  const option = {
-    params: {
-      key: API_KEY,
-      q: query,
-      image_type: 'photo',
-      orientation: 'horizontal',
-      safesearch: 'true',
-      page: currentPage,
-      per_page: perPage,
-    },
-  };
-  try {
-    const response = await axios.get(url, option);
-
-    return response.data;
-  } catch (error) {
-    iziToast.error({
-      title: 'Error',
-      titleColor: '#FFFFFF',
-      message: 'An error occurred while fetching data. Please try again.',
-      position: 'topRight',
-      messageColor: '#FFFFFF',
-      backgroundColor: '#FF6347',
-      iconUrl: null,
-    });
-    console.error('Error fetching data:', error);
-    throw error;
-  }
-}
-
 refs.btnLoadMore.addEventListener('click', onLoadMoreClick);
 
 async function onLoadMoreClick() {
   showSpinner();
 
   currentPage += 1;
+  try {
+    const data = await getImage(query);
 
-  const data = await getImage(query);
+    renderImage(data.hits);
 
-  renderImage(data.hits);
+    lightbox.refresh();
+  } catch {
+    console.error('Error fetching data:', error);
 
-  checkBtnStatus();
+    throw error;
+  } finally {
+    checkBtnStatus();
 
-  hideSpinner();
+    hideSpinner();
 
-  lightbox.refresh();
+    const galleryItemHeight = getGalleryItemHeight();
 
-  const galleryItemHeight = getGalleryItemHeight();
-
-  window.scrollBy({
-    top: galleryItemHeight * 2,
-    behavior: 'smooth',
-  });
-}
-function imageTemplate({
-  webformatURL,
-  largeImageURL,
-  tags,
-  likes,
-  views,
-  comments,
-  downloads,
-}) {
-  return `<li class="gallery-item">
-            <a class="gallery-link" href="${largeImageURL}">
-              <img
-                class="gallery-image"
-                src="${webformatURL}"
-                alt="${tags}"
-              />
-            </a>
-            <ul class="data-image">
-              <li>
-                <div class="data-item">
-                  <span class="image-property">Likes</span>
-                  <span>${likes}</span>
-                </div>
-              </li>
-              <li>
-                <div class="data-item">
-                  <span class="image-property">Views</span>
-                  <span>${views}</span>
-                </div>
-              </li>
-              <li>
-                <div class="data-item">
-                  <span class="image-property">Comments</span>
-                  <span>${comments}</span>
-                </div>
-              </li>
-              <li>
-                <div class="data-item">
-                  <span class="image-property">Downloads</span>
-                  <span>${downloads}</span>
-              </div>
-              </li>
-            </ul>
-          </li>`;
-}
-
-function imagesTemplate(hits) {
-  return hits.map(imageTemplate).join('');
-}
-
-function renderImage(hits) {
-  const markup = imagesTemplate(hits);
-  refs.galleryContainer.insertAdjacentHTML('beforeend', markup);
+    window.scrollBy({
+      top: galleryItemHeight * 2,
+      behavior: 'smooth',
+    });
+  }
 }
 
 function checkBtnStatus() {
